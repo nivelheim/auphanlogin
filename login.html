@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Login</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"></meta>
+
+	<!-- styles for this page -->
+	<link href="login.css" rel="stylesheet">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+ 
+	<script type="text/javascript">
+		$(document).ready(function() {
+			$("#loginForm").submit(function(e) {
+				e.preventDefault(); //Prevent page refreshing after submit
+				$.ajax({
+					url: "login.php",
+					type: "POST",
+					data: $("#loginForm").serialize(),
+					dataType: "json",
+					success: function(response){
+						//Change elements for password input if username check is valid
+						if (response.status == "name_success") {
+							setMessage("success", response.message);
+
+							$("#loginForm").animate({"opacity": 0.0}, "fast");
+							$("#loginForm").animate({"opacity": 1.0}, "fast");
+							
+							setTimeout(() => {
+							$("#input").val("")
+							$("#input").attr("placeholder","Password");
+							$("#input").attr("type","password");
+							$("#input").attr("name","upass");
+
+							$("#notice").replaceWith("<div id='notice'>Forgot Password? Find <a href='#' class='link'>here</a></div>");
+							$("#loginForm h3").text("Enter Password");
+							$("#loginForm input[type='submit']").val("Log In");
+							}, 200)
+						}
+						
+						//Pop up error message if name is not found
+						else if (response.status == "name_notfound") {
+							setMessage("error", response.message);
+						}
+
+						//Action if username check and password match passes
+						else if (response.status == "pw_success") {
+							window.alert(response.message);
+							location.reload();
+						}
+						
+						//Action if password match fails
+						else if (response.status == "pw_unmatch") {
+							setMessage("error", response.message);
+						}
+					},
+					error: function(response) {
+						console.log(response.responseText);
+					}
+            	});
+			});
+			
+			//Function turns on/off the message box on top of the login box
+			function setMessage(errorType, errorMessage) {
+				if (errorType == "error") {
+					$("#messageBox").css("background-color", "rgb(255, 0, 0, 0.4)");
+					$("#messageBox").css("visibility", "visible");
+					$("#message").text(errorMessage);
+
+					setTimeout(function() {
+						$("#messageBox").css("visibility", "hidden");
+					}, 3500)
+				} 
+				else if (errorType == "success") {
+					$("#messageBox").css("background-color", "rgb(0, 255, 0, 0.4)");
+					$("#messageBox").css("visibility", "visible");
+					$("#message").text(errorMessage);
+
+					setTimeout(function() {
+						$("#messageBox").css("visibility", "hidden");
+					}, 3500)
+				}
+			}
+		});
+	</script>
+</head>
+
+<body>
+<main class="main">
+<div id="background"></div>	<!--Background image-->
+	<div id="container">	<!--Center box contains status box + login box-->
+		<div id="messageBox">	<!--Status message box-->
+			<h4 id="message">&nbsp;</h4>
+		</div>
+		<div id="innerContainer">	<!--login box-->
+			<div id="loginBox">
+				<div id="logo">
+					<img src="auphan_logo.png">
+					<h3>Auphansoftware</h3>
+				</div>
+				<form method="POST" id="loginForm">	<!--inner login box-->
+					<h3>Log In</h3>
+					<input type="email" id="input" placeholder="Username" name="uname" required>
+					<div id="notice">Do not have an account? <a href="#" class="link">Sign up</a></div>
+					<input type="submit" value="Next"></input>
+				</form>
+			</div>
+		</div>
+	</div>
+</main>
+
+<footer>
+	<p>2018 <a href="http://www.auphansoftware.com/" target="_blank">Auphan Software</a></p>
+</footer>
+</body>
+</html>
